@@ -12,7 +12,7 @@
 /*                                                                           */
 /*===========================================================================*/
 
-#define COMPILING_FOR_TM
+#define SYM_COMPILE_IN_TM
 
 #include <stdio.h>
 #include <stdlib.h>

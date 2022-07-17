@@ -12,6 +12,8 @@
 /*                                                                           */
 /*===========================================================================*/
 
+#define SENSITIVITY_ANALYSIS
+
 #ifndef _BB_TYPES_H
 #define _BB_TYPES_H
 

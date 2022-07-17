@@ -2586,7 +2586,7 @@ int generate_cuts_in_lp_u(lp_prob *p, double *xx)
 #ifdef SYM_COMPILE_IN_CG      
       if (p->cgp->par.do_findcuts && !new_row_num)
 	 find_cuts_u(p->cgp, p->lp_data, &cg_new_row_num);
-#endif
+
 
       if (p->cgp->cuts_to_add_num){
 	 unpack_cuts_u(p, CUT_FROM_CG, UNPACK_CUTS_MULTIPLE,
@@ -2611,6 +2611,7 @@ int generate_cuts_in_lp_u(lp_prob *p, double *xx)
 	       }
 	    }
 	    FREE(cg_new_rows);
+#endif
 	 }
       }
 #if defined(SYM_COMPILE_IN_CP) && defined(SYM_COMPILE_IN_LP)

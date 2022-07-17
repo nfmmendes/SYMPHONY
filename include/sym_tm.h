@@ -12,6 +12,10 @@
 /*                                                                           */
 /*===========================================================================*/
 
+#define SYM_COMPILE_IN_LP
+#define SYM_COMPILE_IN_CP
+#define SYM_COMPILE_IN_CG
+
 #ifndef _TREE_MANAGER
 #define _TREE_MANAGER
 

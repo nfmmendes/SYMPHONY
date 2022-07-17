@@ -12,6 +12,8 @@
 /*                                                                           */
 /*===========================================================================*/
 
+#define SENSITIVITY_ANALYSIS
+
 #ifndef _LPSOLVER_H
 #define _LPSOLVER_H
 
@@ -57,7 +59,7 @@ void OSL_check_error PROTO((const char *erring_func));
 
 #ifdef USE_CGL_CUTS
 #include "OsiCuts.hpp"
-#include "CglCutGenerator.hpp"
+#include "CglCommon/CglCutGenerator.hpp"
 #include "CglLiftAndProject.hpp"
 #include "CglSimpleRounding.hpp"
 #include "CglMixedIntegerRounding.hpp"

@@ -11,6 +11,7 @@
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
+#define SYM_COMPILE_IN_CP
 
 #ifndef SYM_COMPILE_IN_CP
 

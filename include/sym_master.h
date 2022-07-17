@@ -15,6 +15,8 @@
 #ifndef _MASTER_H
 #define _MASTER_H
 
+#define SYM_COMPILE_IN_CP
+#define SYM_COMPILE_IN_TM
 #define COMPILING_FOR_MASTER
 
 #include <stdio.h>

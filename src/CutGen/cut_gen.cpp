@@ -12,6 +12,8 @@
 /*                                                                           */
 /*===========================================================================*/
 
+#define SYM_COMPILE_IN_CG
+
 #ifndef SYM_COMPILE_IN_CG
 
 #include <stdlib.h>

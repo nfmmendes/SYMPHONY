@@ -15,7 +15,7 @@
 #ifndef _LP_H
 #define _LP_H
 
-#define COMPILING_FOR_LP
+#define SYM_COMPILE_IN_LP
 
 #include "symphony.h"
 #include "sym_timemeas.h"
