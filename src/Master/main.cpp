@@ -219,122 +219,121 @@ int main(int argc, char **argv)
      while(true){
        main_level = last_level = 0;
        for(j = 0; j< 3; j++)
-	  strcpy(args[j], "");
+		  strcpy(args[j], "");
        sym_read_line("SYMPHONY: ", &line);
        sscanf(line, "%s%s%s", args[0], args[1], args[2]); 
        
        if (strcmp(args[0], "help") == 0 || strcmp(args[0], "?") == 0) {
-	 if ((strcmp(args[1], "set") == 0)){
-	   sym_help("set_help");
-	 } else if ((strcmp(args[1], "display") == 0)){
-	   sym_help("display_help");
-	 } else  sym_help("main_help");
+			if ((strcmp(args[1], "set") == 0)){
+			sym_help("set_help");
+			} else if ((strcmp(args[1], "display") == 0)){
+			sym_help("display_help");
+			} else  sym_help("main_help");
        } else if (strcmp(args[0], "load") == 0){ 
 
-	 if(strcmp(args[1], "") == 0){
-	   sym_read_line("Name of the file: ", &line);
-	   strcpy(args[1], line);
-	 }	 
+			if(strcmp(args[1], "") == 0){
+				sym_read_line("Name of the file: ", &line);
+				strcpy(args[1], line);
+			}	 
 
-	 sym_read_tilde(args[1]);	 
+			sym_read_tilde(args[1]);	 
 
-	 if (fopen(args[1], "r") == NULL){
-	   printf("Input file '%s' can't be opened\n",
-		  args[1]);
-	   continue;
-	 }
+			if (fopen(args[1], "r") == NULL){
+				printf("Input file '%s' can't be opened\n", args[1]);
+				continue;
+			}
 
-	 /* check to see if SYMPHONY knows the input type! */
+			/* check to see if SYMPHONY knows the input type! */
 
-	 last_dot = 0;
-	 for (j = 0;; j++){
-	   if (args[1][j] == '\0')
-	     break;
-	   if (args[1][j] == '.') {
-	     last_dot = j;
-	   }
-	 } 
-	 if(last_dot){
-	    strcpy(ext, args[1] + last_dot + 1);
-	 }else{
-	    strcpy(ext, ""); 
-	 }
+			last_dot = 0;
+			for (j = 0;; j++){
+				if (args[1][j] == '\0')
+					break;
+				if (args[1][j] == '.') {
+					last_dot = j;
+				}
+			} 
+			if(last_dot){
+				strcpy(ext, args[1] + last_dot + 1);
+			}else{
+				strcpy(ext, ""); 
+			}
 
-	 if(!(strcmp(ext, "mod") == 0 || strcmp(ext, "mps") == 0 || strcmp(ext, "lpt") == 0
-	      || strcmp(ext, "lp") == 0)){
-	    while(true){
-	     sym_read_line("Type of the file ('mps'/'ampl'/'gmpl'/'lp'): ", &line);
-	     if(!(strcmp(line, "mps") == 0 || strcmp(line, "ampl") == 0 ||
-		  strcmp(line, "gmpl") == 0 || strcmp(line, "lp") == 0 || 
-		  strcmp(line, "lpt") == 0)){
-	       printf("Unknown type!\n");
-	       continue; 
-	     } else {
-	       strcpy(ext, line);
-	       break;
-	     }
-	   }
-	 }
+				if(!(strcmp(ext, "mod") == 0 || strcmp(ext, "mps") == 0 || strcmp(ext, "lpt") == 0
+					|| strcmp(ext, "lp") == 0)){
+
+					while(true){
+							sym_read_line("Type of the file ('mps'/'ampl'/'gmpl'/'lp'): ", &line);
+							if(!(strcmp(line, "mps") == 0 || strcmp(line, "ampl") == 0 ||
+								strcmp(line, "gmpl") == 0 || strcmp(line, "lp") == 0 || 
+								strcmp(line, "lpt") == 0)){
+								printf("Unknown type!\n");
+								continue; 
+							} else {
+								strcpy(ext, line);
+								break;
+							}
+					}
+				}
 	 
-	 if (strcmp(ext, "mps") == 0){
-	    sym_free_env(env);
-	    if(sym_read_mps(env, args[1])){
-	       continue;
-	    }
-	 }else if (strcmp(ext, "lp") == 0 || strcmp(ext, "lpt") == 0){
-	    sym_free_env(env);
-	    if(sym_read_lp(env, args[1])){
-	       continue;
-	    } 
-	 }else {
-	   if(strcmp(args[2], "") == 0){
-	     sym_read_line("Name of the data file: ", &line);
-	     strcpy(args[2], line);
-	   }
+			 if (strcmp(ext, "mps") == 0){
+				sym_free_env(env);
+				if(sym_read_mps(env, args[1])){
+				   continue;
+				}
+			 }else if (strcmp(ext, "lp") == 0 || strcmp(ext, "lpt") == 0){
+				sym_free_env(env);
+				if(sym_read_lp(env, args[1])){
+				   continue;
+				} 
+			 }else {
+			   if(strcmp(args[2], "") == 0){
+				 sym_read_line("Name of the data file: ", &line);
+				 strcpy(args[2], line);
+			   }
 
-	   sym_read_tilde(args[2]);	 
+			   sym_read_tilde(args[2]);	 
 	 
-	   if(fopen(args[2], "r") == NULL){
-	     printf("Data file '%s' can't be opened\n",
-		    args[2]);
-	     continue;
-	   }
-	   sym_free_env(env);
-	   if(sym_read_gmpl(env, args[1], args[2])){
-	     continue;
-	   }
+			   if(fopen(args[2], "r") == NULL){
+				 printf("Data file '%s' can't be opened\n",
+					args[2]);
+				 continue;
+			   }
+			   sym_free_env(env);
+			   if(sym_read_gmpl(env, args[1], args[2])){
+				 continue;
+			   }
 	   
-	 }
-       } else if(strcmp(args[0], "solve") == 0 || 
-		 strcmp(args[0], "lpsolve") == 0){
-	 if(!env->mip->n){
-	   printf("No loaded problem. Use 'load' to read in a problem!\n");
-	   continue;
-	 } 
-	 if(strcmp(args[0], "solve") == 0){
-	   start_time = sym_wall_clock(NULL);
-	   printf("\n");
-	   if (env->mip->obj2 != NULL){
-	      termcode = sym_mc_solve(env);
-	   } else {
-	      termcode = sym_solve(env);
-	   }
-	   finish_time = sym_wall_clock(NULL);
-	 } else {
-	   is_int = env->mip->is_int;
-	   env->mip->is_int  = (char *)   calloc(CSIZE, env->mip->n);
-	   start_time = sym_wall_clock(NULL);
-	   printf("\n");
-	   if (env->mip->obj2 != NULL){
-	      termcode = sym_mc_solve(env);
-	   } else {
-	      termcode = sym_solve(env);
-	   }
-	   finish_time = sym_wall_clock(NULL);
-	   env->mip->is_int = is_int;
-	   is_int = 0;
-	 }
-       } else if (strcmp(args[0], "display") == 0){
+			}
+     } else if(strcmp(args[0], "solve") == 0 || strcmp(args[0], "lpsolve") == 0){
+			 if(!env->mip->n){
+			   printf("No loaded problem. Use 'load' to read in a problem!\n");
+			   continue;
+			 } 
+			 if(strcmp(args[0], "solve") == 0){
+			   start_time = sym_wall_clock(NULL);
+			   printf("\n");
+			   if (env->mip->obj2 != NULL){
+				  termcode = sym_mc_solve(env);
+			   } else {
+				  termcode = sym_solve(env);
+			   }
+			   finish_time = sym_wall_clock(NULL);
+			} else {
+				is_int = env->mip->is_int;
+			    env->mip->is_int  = (char *)   calloc(CSIZE, env->mip->n);
+			    start_time = sym_wall_clock(NULL);
+			    printf("\n");
+			    if (env->mip->obj2 != NULL){
+				  termcode = sym_mc_solve(env);
+			    } else {
+					termcode = sym_solve(env);
+				}
+			   finish_time = sym_wall_clock(NULL);
+			   env->mip->is_int = is_int;
+			   is_int = 0;
+		 }
+     } else if (strcmp(args[0], "display") == 0){
 
 	 if(strcmp(args[1], "") == 0){
 	   printf("Please type 'help'/'?' to see the display options!\n");
@@ -346,10 +345,11 @@ int main(int argc, char **argv)
 	     main_level = 1;
 	     sym_read_line("SYMPHONY\\Display: ", &line);	 
 	     sscanf(line, "%s%s", args[1], args[2]);
-       	     last_level = 1;
+       	 last_level = 1;
 	     if (strcmp(args[2], "") == 0){
-		last_level = 1;
+			last_level = 1;
 	     }
+	   	
 	   } else {
 	      last_level = 0;
 	   }
