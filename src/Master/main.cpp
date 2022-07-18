@@ -163,36 +163,34 @@ int main(int argc, char **argv)
       sym_parse_command_line(env, argc, argv);
 
       if (env->par.verbosity >= 0){
-	 sym_version();
+		sym_version();
       }
       
       if (env->par.test){
-
-	 sym_test(env, argc, argv, &termcode);
-	 
+		sym_test(env, argc, argv, &termcode);
       }else{
 	 
-	 if ((termcode = sym_load_problem(env)) < 0){
-	    printf("\nFatal errors encountered. Exiting with code %i.\n",
-		   termcode);
-	    printf("See symphony.h for meaning of code.\n\n");
-	    exit(termcode);
-	 }
+		 if ((termcode = sym_load_problem(env)) < 0){
+			printf("\nFatal errors encountered. Exiting with code %i.\n",
+			   termcode);
+			printf("See symphony.h for meaning of code.\n\n");
+			exit(termcode);
+		 }
 	 
-	 if ((termcode = sym_find_initial_bounds(env)) < 0){
-	    printf("\nFatal errors encountered. Exiting with code %i.\n",
-		   termcode);
-	    printf("See symphony.h for meaning of code.\n\n");
-	    exit(termcode);
-	 }
-	 printf("\n");
-	 if (env->mip->obj2 != NULL){
-	    sym_mc_solve(env);
-	 } else {
-	    sym_solve(env);
-	 }
+		 if ((termcode = sym_find_initial_bounds(env)) < 0){
+			printf("\nFatal errors encountered. Exiting with code %i.\n",
+			   termcode);
+			printf("See symphony.h for meaning of code.\n\n");
+			exit(termcode);
+		 }
+
+      	printf("\n");
+		 if (env->mip->obj2 != NULL){
+			sym_mc_solve(env);
+		 } else {
+			sym_solve(env);
+		 }
       }
-   
    } else{
 
      FILE *f = NULL;
