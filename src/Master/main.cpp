@@ -335,9 +335,9 @@ int main(int argc, char **argv)
 		 }
      } else if (strcmp(args[0], "display") == 0){
 
-	 if(strcmp(args[1], "") == 0){
-	   printf("Please type 'help'/'?' to see the display options!\n");
-	 }
+		 if(strcmp(args[1], "") == 0){
+		   printf("Please type 'help'/'?' to see the display options!\n");
+		 }
 
 	 while (true){
 
@@ -355,134 +355,134 @@ int main(int argc, char **argv)
 	   }
 
 	   if (strcmp(args[1], "help") == 0 || strcmp(args[1], "?") == 0) {
-	     sym_help("display_help");
-	   } else if (strcmp(args[1], "solution") == 0 || 
-		      strcmp(args[1], "obj") == 0 
+			 sym_help("display_help");
+	   } else if (strcmp(args[1], "solution") == 0 ||  strcmp(args[1], "obj") == 0 
 		      || strcmp(args[1], "stats") == 0){
-	     if(!env->mip->n){
-	       printf("No loaded problem! "
-		      "Use 'load' in the main menu to read in a problem!\n");
-	       strcpy(args[1], "");
-	     } 
+			 if(!env->mip->n){
+			   printf("No loaded problem! "
+				  "Use 'load' in the main menu to read in a problem!\n");
+			   strcpy(args[1], "");
+			 } 
 	     if(strcmp(args[1], "solution") == 0){
-		int display = TRUE;
-		switch(env->termcode){
-		 case TM_NO_SOLUTION:
-		   printf("Problem was found infeasible!\n");
-		   display = FALSE;
-		   break;
-		 case TM_UNBOUNDED:
-		   printf("Problem was found to be unbounded!\n");
-		   display = FALSE;
-		   break;
-		 case TM_NODE_LIMIT_EXCEEDED:		    
-		    printf("Node limit reached!\n");		    
-		    break;
-		 case TM_FOUND_FIRST_FEASIBLE:    
-		    printf("First feasible solution found!\n");
-		    break;
-		 case TM_TIME_LIMIT_EXCEEDED:   
-		    printf("Time limit reached!\n");
-		    break;
-		 case TM_TARGET_GAP_ACHIEVED:
-		    printf("Target gap achieved!\n");
-		    break;
-		 case TM_OPTIMAL_SOLUTION_FOUND:
-		    printf("Optimal Solution found!\n");
-		    break;
-		 case SOMETHING_DIED:
-		 case TM_ERROR__NUMERICAL_INSTABILITY:  
-		 case TM_ERROR__NO_BRANCHING_CANDIDATE:
-		 case TM_ERROR__ILLEGAL_RETURN_CODE:
-		 case TM_ERROR__COMM_ERROR:
-		 case TM_ERROR__USER:
-		    printf("Error in displaying solution! \n"); 
-		    printf(  "* Terminated abnormally with error message %i *\n",
-			     termcode);		      
-		 default:
-		    display = FALSE;		    
-		    break;		    
+				int display = TRUE;
+				switch(env->termcode){
+					 case TM_NO_SOLUTION:
+					   printf("Problem was found infeasible!\n");
+					   display = FALSE;
+					   break;
+					 case TM_UNBOUNDED:
+					   printf("Problem was found to be unbounded!\n");
+					   display = FALSE;
+					   break;
+					 case TM_NODE_LIMIT_EXCEEDED:		    
+						printf("Node limit reached!\n");		    
+						break;
+					 case TM_FOUND_FIRST_FEASIBLE:    
+						printf("First feasible solution found!\n");
+						break;
+					 case TM_TIME_LIMIT_EXCEEDED:   
+						printf("Time limit reached!\n");
+						break;
+					 case TM_TARGET_GAP_ACHIEVED:
+						printf("Target gap achieved!\n");
+						break;
+					 case TM_OPTIMAL_SOLUTION_FOUND:
+						printf("Optimal Solution found!\n");
+						break;
+					 case SOMETHING_DIED:
+					 case TM_ERROR__NUMERICAL_INSTABILITY:  
+					 case TM_ERROR__NO_BRANCHING_CANDIDATE:
+					 case TM_ERROR__ILLEGAL_RETURN_CODE:
+					 case TM_ERROR__COMM_ERROR:
+					 case TM_ERROR__USER:
+						printf("Error in displaying solution! \n"); 
+						printf(  "* Terminated abnormally with error message %i *\n",
+							 termcode);		      
+					 default:
+						display = FALSE;		    
+						break;		    
+				}
+				if(display){
+				   if(env->best_sol.has_sol){
+					  if (env->mip->colname){ 
+					 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+					 printf("Nonzero column names and values in the solution\n");
+					 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+					 for(j = 0; j<env->best_sol.xlength; j++){		      
+						printf("%8s %10.10f\n", 
+						   env->mip->colname[env->best_sol.xind[j]],
+						   env->best_sol.xval[j]);
+					 }
+					 printf("\n");
+					  }else{
+					 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+					 printf("User indices and values in the solution\n");
+					 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+					 for(j = 0; j<env->best_sol.xlength; j++){		      
+						printf("%7d %10.10f\n", env->best_sol.xind[j], 
+						   env->best_sol.xval[j]);
+					 }			    
+					 printf("\n");
+					  }
+				   } else{
+					  printf("Error in displaying solution!\n");
+				   }
+				}
+
+				strcpy(args[1], ""); 		   
+		} else if (strcmp(args[1], "obj") == 0){
+			if(sym_get_obj_val(env, &objval)){
+			   printf("Error in displaying objective value!\n" 
+				  "The problem is either infeasible " 
+				  "or has not been solved yet!\n");
+				strcpy(args[1], "");
+			 //		 continue;
+			} else { 
+				printf("Objective Value: %f\n", objval);
+			}
+				strcpy(args[1], "");	       
+		} else if (strcmp(args[1], "stats") == 0){
+			sym_print_statistics(env, start_time, finish_time);
 		}
-		if(display){
-		   if(env->best_sol.has_sol){
-		      if (env->mip->colname){ 
-			 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
-			 printf("Nonzero column names and values in the solution\n");
-			 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
-			 for(j = 0; j<env->best_sol.xlength; j++){		      
-			    printf("%8s %10.10f\n", 
-				   env->mip->colname[env->best_sol.xind[j]],
-				   env->best_sol.xval[j]);
-			 }
-			 printf("\n");
-		      }else{
-			 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
-			 printf("User indices and values in the solution\n");
-			 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
-			 for(j = 0; j<env->best_sol.xlength; j++){		      
-			    printf("%7d %10.10f\n", env->best_sol.xind[j], 
-				   env->best_sol.xval[j]);
-			 }			    
-			 printf("\n");
-		      }
-		   } else{
-		      printf("Error in displaying solution!\n");
-		   }
-		}
-		strcpy(args[1], ""); 		   
-	     } else if (strcmp(args[1], "obj") == 0){
-		if(sym_get_obj_val(env, &objval)){
-		   printf("Error in displaying objective value!\n" 
-			  "The problem is either infeasible " 
-			  "or has not been solved yet!\n");
-		 strcpy(args[1], "");
-		 //		 continue;
-	       } else { 
-		 printf("Objective Value: %f\n", objval);
-	       }
-	       strcpy(args[1], "");	       
-	     } else if (strcmp(args[1], "stats") == 0){
-                sym_print_statistics(env, start_time, finish_time);
-	     }
-	     strcpy(args[1], "");	       
-	   } else if (strcmp(args[1], "parameter") == 0){
+			strcpy(args[1], "");	       
+	  } else if (strcmp(args[1], "parameter") == 0){
 
 	     if(strcmp(args[2], "") == 0){
-	       printf("Please type 'help'/'?' " 
-		      "to see the list of available parameters!\n");
+				printf("Please type 'help'/'?' to see the list of available parameters!\n");
 	     }
 	     while(true){
 
 	       if (strcmp(args[2], "") == 0){
-		 main_level = 3;
-		 sym_read_line("SYMPHONY\\Display\\Parameter: ", &line);
-		 strcpy(args[2], line);	
-		 if (last_level != 0 || last_level !=1)
-		    last_level = 2;
-	       }
+				main_level = 3;
+				sym_read_line("SYMPHONY\\Display\\Parameter: ", &line);
+				strcpy(args[2], line);	
+				if (last_level != 0 || last_level !=1)
+					last_level = 2;
+	      }
 
 	       if (strcmp(args[2], "help") == 0 || strcmp(args[2], "?") == 0) {
-		 sym_help("display_param_help");
+				sym_help("display_param_help");
 	       } else if (strcmp(args[2], "back") == 0){
-		 break;
-	       } else if ((strcmp(args[2], "quit") == 0) ||
-			  (strcmp(args[2], "exit") == 0)){ 
-		 terminate = TRUE;
-		 break;
+				break;
+	       } else if ((strcmp(args[2], "quit") == 0) || (strcmp(args[2], "exit") == 0)){
+				terminate = TRUE;
+				break;
 	       } else {
-		 if (sym_get_int_param(env, args[2], &int_value) == 0){
-		   printf("The value of %s: %i\n", args[2], int_value);
-		 } else if ( sym_get_dbl_param(env, args[2], &dbl_value) == 0){
-		   printf("The value of %s: %f\n", args[2], dbl_value);
-		 }else {
-		   printf("Unknown parameter/command!\n");		   
-		 }
+				if (sym_get_int_param(env, args[2], &int_value) == 0){
+					printf("The value of %s: %i\n", args[2], int_value);
+				} else if ( sym_get_dbl_param(env, args[2], &dbl_value) == 0){
+					printf("The value of %s: %f\n", args[2], dbl_value);
+				}else {
+					printf("Unknown parameter/command!\n");		   
+				}
 	       }
-	       strcpy(args[1], "");
-	       strcpy(args[2], "");
-	       if (last_level < 2) break; 
+			strcpy(args[1], "");
+			strcpy(args[2], "");
+			if (last_level < 2) 
+				break; 
 	     }
-	     if (terminate) break;	        	   
+	     if (terminate) 
+			 break;	        	   
 	   } else if (strcmp(args[1], "back") == 0){
 	     break;
 	   } else if ((strcmp(args[1], "quit") == 0) ||
