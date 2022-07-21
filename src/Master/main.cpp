@@ -433,10 +433,8 @@ int main(int argc, char **argv)
 		} else if (strcmp(args[1], "obj") == 0){
 			if(sym_get_obj_val(env, &objval)){
 			   printf("Error in displaying objective value!\n" 
-				  "The problem is either infeasible " 
-				  "or has not been solved yet!\n");
+				  "The problem is either infeasible or has not been solved yet!\n");
 				strcpy(args[1], "");
-			 //		 continue;
 			} else { 
 				printf("Objective Value: %f\n", objval);
 			}
@@ -480,116 +478,114 @@ int main(int argc, char **argv)
 			strcpy(args[2], "");
 			if (last_level < 2) 
 				break; 
-	     }
-	     if (terminate) 
-			 break;	        	   
-	   } else if (strcmp(args[1], "back") == 0){
-	     break;
-	   } else if ((strcmp(args[1], "quit") == 0) ||
-		      (strcmp(args[1], "exit") == 0)){
-	     terminate = TRUE;
-	     break;
-	   } else {
-	     printf("Unknown command!\n");
-	   }     
-	   strcpy(args[1], "");
-	   strcpy(args[2], "");
-	   if(last_level < 1) break; 
-	 }
+			}
+			if (terminate) 
+				 break;	        	   
+		} else if (strcmp(args[1], "back") == 0){
+				break;
+		   } else if ((strcmp(args[1], "quit") == 0) || (strcmp(args[1], "exit") == 0)){
+			 terminate = TRUE;
+			 break;
+		   } else {
+			 printf("Unknown command!\n");
+		   }     
+		   strcpy(args[1], "");
+		   strcpy(args[2], "");
+		   if(last_level < 1) 
+			   break; 
+		 }
        } else if (strcmp(args[0], "set") == 0){
-	 if(strcmp(args[1], "") == 0){
-	   printf("Please type 'help'/'?' to see the list of parameters!\n");
-	 }
+			 if(strcmp(args[1], "") == 0){
+			   printf("Please type 'help'/'?' to see the list of parameters!\n");
+			 }
 
-	 while (true){
-	   if(strcmp(args[1], "") == 0){
-	     main_level = 2;
-	     sym_read_line("SYMPHONY\\Set: ", &line);	 
-	     sscanf(line, "%s%s", args[1], args[2]);
-	     last_level = 1;
-	   } else{
-	     last_level = 0;
-	   }
+			 while (true){
+			   if(strcmp(args[1], "") == 0){
+				 main_level = 2;
+				 sym_read_line("SYMPHONY\\Set: ", &line);	 
+				 sscanf(line, "%s%s", args[1], args[2]);
+				 last_level = 1;
+			   } else{
+				 last_level = 0;
+			   }
 
-	   if (strcmp(args[1], "help") == 0 || strcmp(args[1], "?") == 0) {
-	     sym_help("set_help");
-	   } else if (strcmp(args[1], "back") == 0){
-	     break;
-	   } else if ((strcmp(args[1], "quit") == 0) ||
-		      (strcmp(args[1], "exit") == 0)){
-	     terminate = TRUE;
-	     break;
-	   } else if (strcmp(args[1], "param_file") == 0){
+			   if (strcmp(args[1], "help") == 0 || strcmp(args[1], "?") == 0) {
+					sym_help("set_help");
+			   } else if (strcmp(args[1], "back") == 0){
+					break;
+			   } else if ((strcmp(args[1], "quit") == 0) ||	(strcmp(args[1], "exit") == 0)){
+					terminate = TRUE;
+					break;
+			   } else if (strcmp(args[1], "param_file") == 0){
+					 if(strcmp(args[2], "") == 0){
+					   sym_read_line("Name of the parameter file: ", &line);
+					   strcpy(args[2], line);
+					 }
 
-	     if(strcmp(args[2], "") == 0){
-	       sym_read_line("Name of the parameter file: ", &line);
-	       strcpy(args[2], line);
-	     }
+					 sym_read_tilde(args[2]);	 
 
-	     sym_read_tilde(args[2]);	 
+					 if ((f = fopen(args[2], "r")) == NULL){
+					   printf("Parameter file '%s' can't be opened\n",
+						  args[2]);
+					   if(last_level == 1){
+							strcpy(args[1], "");
+							strcpy(args[2], "");
+							continue;
+						}
+					   break;
+					 }
 
-	     if ((f = fopen(args[2], "r")) == NULL){
-	       printf("Parameter file '%s' can't be opened\n",
-		      args[2]);
-	       if(last_level == 1){
-		 strcpy(args[1], "");
-		 strcpy(args[2], "");
-		 continue;
-	       }
-	       else break;
-	     }
+					 /*read in parameter file*/
+					 while(NULL != fgets(args[2], MAX_LINE_LENGTH, f)){ 
+					   sscanf(args[2],"%s%s", param, value);
+					   if(sym_set_param(env, args[2]) == 0){
+					 printf("Setting %s to: %s\n", param, value); 
+					   } else {
+					 printf("Unknown parameter %s: !\n", param);
+					 continue;
+					   }	     
+					 }
+					 fclose(f);
 
-	     /*read in parameter file*/
-	     while(NULL != fgets(args[2], MAX_LINE_LENGTH, f)){ 
-	       sscanf(args[2],"%s%s", param, value);
-	       if(sym_set_param(env, args[2]) == 0){
-		 printf("Setting %s to: %s\n", param, value); 
-	       } else {
-		 printf("Unknown parameter %s: !\n", param);
-		 continue;
-	       }	     
-	     }
-	     fclose(f);
-
-	   } else {
+				} else {
 	    
-	     if(strcmp(args[2], "") == 0){
-	       sym_read_line("Value of the parameter: ", &line);
-	       strcpy(args[2], line);
-	     }
-	     strcpy(args[0], "");
-	     sprintf(args[0], "%s %s", args[1], args[2]);  
-	     if(sym_set_param(env, args[0]) == 0){
-	       printf("Setting %s to: %s\n", args[1], args[2]); 
-	     } else {
-	       printf("Unknown parameter/command!\n");
-	     }
-	     if(last_level <1) break;
-	     else{
-	       strcpy(args[1], "");
-	       strcpy(args[2], "");	       
-	       continue;
-	     }
-	   }
-	   if(last_level <1) break;
-	   strcpy(args[1], "");
-	   strcpy(args[2], "");	       
-	 }
+					 if(strcmp(args[2], "") == 0){
+					   sym_read_line("Value of the parameter: ", &line);
+					   strcpy(args[2], line);
+					 }
+					 strcpy(args[0], "");
+					 sprintf(args[0], "%s %s", args[1], args[2]);  
+					 if(sym_set_param(env, args[0]) == 0){
+					   printf("Setting %s to: %s\n", args[1], args[2]); 
+					 } else {
+					   printf("Unknown parameter/command!\n");
+					 }
+					 if(last_level <1) break;
+					 else{
+					   strcpy(args[1], "");
+					   strcpy(args[2], "");	       
+					   continue;
+					 }
+				}
+				if(last_level <1) 
+					break;
+				strcpy(args[1], "");
+				strcpy(args[2], "");	       
+			}
        } else if (strcmp(args[0], "reset") == 0){
-	 printf("Resetting...\n");
-	 sym_close_environment(env);
-	 env = sym_open_environment();
-	 sym_set_int_param(env, "verbosity", -1);
-       } else if ((strcmp(args[0], "quit") == 0) ||
-		  (strcmp(args[0], "exit") == 0)){
-	 break;
+			 printf("Resetting...\n");
+			 sym_close_environment(env);
+			 env = sym_open_environment();
+			 sym_set_int_param(env, "verbosity", -1);
+       } else if ((strcmp(args[0], "quit") == 0) || (strcmp(args[0], "exit") == 0)){
+			break;
        } else {
-	 printf("Unknown command!\n");
-	 continue;
+			printf("Unknown command!\n");
+			continue;
        }
 
-       if(terminate) break;
-
+       if(terminate) 
+		   break;
      }
    } 
    sym_close_environment(env);
