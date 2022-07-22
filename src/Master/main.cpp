@@ -152,6 +152,7 @@ int main_level = 0; /* 0 - SYMPHONY:
 int sym_help(const char *line);
 int sym_read_line(const char *prompt, char **input);
 void sym_manage_fatal_errors(sym_environment* env, int termcode);
+void sym_display_solution(sym_environment* env);
 
 int main(int argc, char **argv)
 {    
@@ -383,31 +384,9 @@ int main(int argc, char **argv)
 						display = FALSE;		    
 						break;		    
 				}
+				
 				if(display){
-				   if(env->best_sol.has_sol){
-					  if (env->mip->colname){ 
-					 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
-					 printf("Nonzero column names and values in the solution\n");
-					 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
-					 for(j = 0; j<env->best_sol.xlength; j++){		      
-						printf("%8s %10.10f\n", 
-						   env->mip->colname[env->best_sol.xind[j]],
-						   env->best_sol.xval[j]);
-					 }
-					 printf("\n");
-					  }else{
-					 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
-					 printf("User indices and values in the solution\n");
-					 printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
-					 for(j = 0; j<env->best_sol.xlength; j++){		      
-						printf("%7d %10.10f\n", env->best_sol.xind[j], 
-						   env->best_sol.xval[j]);
-					 }			    
-					 printf("\n");
-					  }
-				   } else{
-					  printf("Error in displaying solution!\n");
-				   }
+				   sym_display_solution(env);
 				}
 
 				strcpy(args[1], ""); 		   
@@ -529,7 +508,6 @@ int main(int argc, char **argv)
 					 fclose(f);
 
 				} else {
-	    
 					 if(strcmp(args[2], "") == 0){
 					   sym_read_line("Value of the parameter: ", &line);
 					   strcpy(args[2], line);
@@ -576,6 +554,35 @@ int main(int argc, char **argv)
 
 /*===========================================================================*\
 \*===========================================================================*/
+void sym_display_solution(sym_environment* env)
+{
+	if (env->best_sol.has_sol) {
+		if (env->mip->colname) {
+			printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+			printf("Nonzero column names and values in the solution\n");
+			printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+			for (int j = 0; j < env->best_sol.xlength; j++) {
+				printf("%8s %10.10f\n",
+					env->mip->colname[env->best_sol.xind[j]],
+					env->best_sol.xval[j]);
+			}
+			printf("\n");
+		}
+		else {
+			printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+			printf("User indices and values in the solution\n");
+			printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
+			for (int j = 0; j < env->best_sol.xlength; j++) {
+				printf("%7d %10.10f\n", env->best_sol.xind[j],
+					env->best_sol.xval[j]);
+			}
+			printf("\n");
+		}
+	}
+	else {
+		printf("Error in displaying solution!\n");
+	}
+}
 
 void sym_manage_fatal_errors(sym_environment* env, int termcode)
 {
