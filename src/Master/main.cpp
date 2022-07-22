@@ -151,6 +151,7 @@ int main_level = 0; /* 0 - SYMPHONY:
 
 int sym_help(const char *line);
 int sym_read_line(const char *prompt, char **input);
+void sym_manage_fatal_errors(sym_environment* env, int termcode);
 
 int main(int argc, char **argv)
 {    
@@ -169,27 +170,7 @@ int main(int argc, char **argv)
       if (env->par.test){
 		sym_test(env, argc, argv, &termcode);
       }else{
-	 
-		 if ((termcode = sym_load_problem(env)) < 0){
-			printf("\nFatal errors encountered. Exiting with code %i.\n",
-			   termcode);
-			printf("See symphony.h for meaning of code.\n\n");
-			exit(termcode);
-		 }
-	 
-		 if ((termcode = sym_find_initial_bounds(env)) < 0){
-			printf("\nFatal errors encountered. Exiting with code %i.\n",
-			   termcode);
-			printf("See symphony.h for meaning of code.\n\n");
-			exit(termcode);
-		 }
-
-      	printf("\n");
-		 if (env->mip->obj2 != NULL){
-			sym_mc_solve(env);
-		 } else {
-			sym_solve(env);
-		 }
+		 sym_manage_fatal_errors(env, termcode);
       }
    } else{
 
@@ -595,6 +576,32 @@ int main(int argc, char **argv)
 
 /*===========================================================================*\
 \*===========================================================================*/
+
+void sym_manage_fatal_errors(sym_environment* env, int termcode)
+{
+	if ((termcode = sym_load_problem(env)) < 0) {
+		printf("\nFatal errors encountered. Exiting with code %i.\n",
+			termcode);
+		printf("See symphony.h for meaning of code.\n\n");
+		exit(termcode);
+	}
+
+	if ((termcode = sym_find_initial_bounds(env)) < 0) {
+		printf("\nFatal errors encountered. Exiting with code %i.\n",
+			termcode);
+		printf("See symphony.h for meaning of code.\n\n");
+		exit(termcode);
+	}
+
+	printf("\n");
+	if (env->mip->obj2 != NULL) {
+		sym_mc_solve(env);
+	}
+	else {
+		sym_solve(env);
+	}
+}
+
 
 int sym_help(const char *line)
 {    
