@@ -1734,6 +1734,7 @@ SYMPHONYLIB_EXPORT int sym_warm_solve(sym_environment *env)
    /* first check for the updates! */
    char *cru_vars = NULL; 
    double etol = 1e-04;
+
    if(env->par.tm_par.keep_description_of_pruned != KEEP_IN_MEMORY){
 
       return(sym_solve(env));
@@ -1816,7 +1817,7 @@ SYMPHONYLIB_EXPORT int sym_warm_solve(sym_environment *env)
 	 change_type = env->mip->change_type[i];
 	 if(change_type == RHS_CHANGED || change_type == COL_BOUNDS_CHANGED || 
 	    change_type == OBJ_COEFF_CHANGED || change_type == COLS_ADDED){
-#if 0
+
 	    if(change_type == OBJ_COEFF_CHANGED){
 	       if(env->par.lp_par.do_reduced_cost_fixing && !env->par.multi_criteria){		 
 		  printf("sym_warm_solve(): SYMPHONY can not resolve for the\n");
@@ -1847,7 +1848,7 @@ SYMPHONYLIB_EXPORT int sym_warm_solve(sym_environment *env)
 		  return(FUNCTION_TERMINATED_ABNORMALLY);
 	       } 
 	    }
-#endif
+
 	    if(!env->mip->cru_vars_num){
 	       analyzed = env->warm_start->stat.analyzed;
 	       depth = env->warm_start->stat.max_depth;
@@ -7461,6 +7462,29 @@ SYMPHONYLIB_EXPORT int sym_set_param(sym_environment *env, char *line)
 	 tm_par->keep_description_of_pruned = DISCARD;
       }
       lp_par->sensitivity_analysis = tm_par->sensitivity_analysis;
+#else
+      printf("Warning: Sensitivity analysis features are not currently\n");
+      printf("         enabled. You must rebuild SYMPHONY with these\n");
+      printf("         features enabled in order to use them.\n\n");
+#endif
+      return(0);
+   }else if (strcmp(key, "sensitivity_bounds") == 0 ||
+	    strcmp(key, "TM_sensitivity_bounds") == 0 ){
+#ifdef SENSITIVITY_ANALYSIS
+      READ_INT_PAR(tm_par->sensitivity_bounds);
+      lp_par->sensitivity_bounds = tm_par->sensitivity_bounds;
+#else
+      printf("Warning: Sensitivity analysis features are not currently\n");
+      printf("         enabled. You must rebuild SYMPHONY with these\n");
+      printf("         features enabled in order to use them.\n\n");
+#endif
+      return(0);
+   }
+   else if (strcmp(key, "sensitivity_rhs") == 0 ||
+	    strcmp(key, "TM_sensitivity_rhs") == 0 ){
+#ifdef SENSITIVITY_ANALYSIS
+      READ_INT_PAR(tm_par->sensitivity_rhs);
+      lp_par->sensitivity_rhs = tm_par->sensitivity_rhs;
 #else
       printf("Warning: Sensitivity analysis features are not currently\n");
       printf("         enabled. You must rebuild SYMPHONY with these\n");
