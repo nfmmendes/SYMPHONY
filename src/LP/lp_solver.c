@@ -58,6 +58,10 @@ void free_lp_arrays(LPdata *lp_data)
    //Anahita
    FREE(lp_data->raysol);
    FREE(lp_data->slacks);
+   // feb223
+   FREE(lp_data->cstat);
+   FREE(lp_data->rstat);
+
    FREE(lp_data->random_hash);
    FREE(lp_data->hashes);
    FREE(lp_data->accepted_ind);
@@ -192,21 +196,26 @@ void size_lp_arrays(LPdata *lp_data, char do_realloc, char set_max,
       if (! do_realloc){
          FREE(lp_data->dualsol);
          lp_data->dualsol = (double *) malloc(lp_data->maxm * DSIZE);
-	 //Anahita
+	      //Anahita
          FREE(lp_data->raysol);
          lp_data->raysol = (double *) malloc(lp_data->maxm * DSIZE);
-	 //
-	 FREE(lp_data->slacks);
-	 lp_data->slacks  = (double *) malloc(lp_data->maxm * DSIZE);
+         
+         FREE(lp_data->slacks);
+         lp_data->slacks  = (double *) malloc(lp_data->maxm * DSIZE);
+         FREE(lp_data->rstat);
+         lp_data->rstat = (int *)malloc((lp_data->maxm) * ISIZE);
      }else{
          lp_data->dualsol = (double *) realloc((char *)lp_data->dualsol,
                                                lp_data->maxm * DSIZE);
-	 //Anahita
-	 lp_data->raysol = (double *) realloc((char *)lp_data->raysol,
-	    lp_data->maxm * DSIZE);
-	 //
-	 lp_data->slacks  = (double *) realloc((void *)lp_data->slacks,
-					       lp_data->maxm * DSIZE);
+         //Anahita
+         lp_data->raysol = (double *) realloc((char *)lp_data->raysol,
+            lp_data->maxm * DSIZE);
+         //
+         lp_data->slacks  = (double *) realloc((void *)lp_data->slacks,
+                           lp_data->maxm * DSIZE);
+         // feb223
+         lp_data->rstat = (int *)realloc((void *)lp_data->rstat,
+                                          (lp_data->maxm) * ISIZE);
       }
       /* rows is realloc'd in either case just to keep the base constr */
       lp_data->rows = (row_data *) realloc((char *)lp_data->rows,
@@ -228,7 +237,10 @@ void size_lp_arrays(LPdata *lp_data, char do_realloc, char set_max,
          FREE(lp_data->heur_solution);
          lp_data->heur_solution = (double *) malloc(lp_data->maxn * DSIZE);
          FREE(lp_data->col_solution);
-         lp_data->col_solution = (double *) malloc(lp_data->maxn * DSIZE);
+         lp_data->col_solution = (double *)malloc(lp_data->maxn * DSIZE);
+         // feb223
+         FREE(lp_data->cstat);
+         lp_data->cstat = (int *)malloc((lp_data->maxn) * ISIZE);
 #ifdef __CPLEX__
 	 FREE(lp_data->lb);
 	 lp_data->lb = (double *) malloc(lp_data->maxn * DSIZE);
@@ -248,6 +260,9 @@ void size_lp_arrays(LPdata *lp_data, char do_realloc, char set_max,
                lp_data->heur_solution, lp_data->maxn * DSIZE);
          lp_data->col_solution = (double *) realloc((char *)
                lp_data->col_solution, lp_data->maxn * DSIZE);
+         // feb223
+         lp_data->cstat = (int *)realloc((void *)lp_data->cstat,
+                                    (lp_data->maxn) * ISIZE);
 #ifdef __CPLEX__
 	 lp_data->lb = (double *) realloc((char *)lp_data->lb,
 					  lp_data->maxn * DSIZE);
@@ -2339,11 +2354,22 @@ void open_lp_solver(LPdata *lp_data)
    lp_data->si->messageHandler()->setLogLevel(0);
 #ifdef __OSI_CLP__
    lp_data->si->setupForRepeatedUse();
-   //lp_data->si->setupForRepeatedUse(3,0);
-   //lp_data->si->getModelPtr()->setFactorizationFrequency(200);
-   //lp_data->si->getModelPtr()->setSparseFactorization(true);
-   //lp_data->si->getModelPtr()->setSpecialOptions(524288);
-   //lp_data->si->getModelPtr()->setSpecialOptions(4);   
+   // feb223
+   int options = lp_data->si->getModelPtr()->specialOptions();
+   int moreOptions = lp_data->si->getModelPtr()->moreSpecialOptions();
+   
+   options |= 32           // CLP creates ray while doing dual simplex
+            // + 2048         // CLP does not cruch the problem
+                              // maybe not needed if we recompute dj's on fixed vars ???
+            + 0x08000000;  // CLP computes accurate duals on LP_D_ITLIM
+   moreOptions |= 8192;    // CLP uses dual simplex if it has suggested to do so
+   lp_data->si->getModelPtr()->setSpecialOptions(options);
+   lp_data->si->getModelPtr()->setMoreSpecialOptions(moreOptions);
+   // lp_data->si->setupForRepeatedUse(3,0);
+   // lp_data->si->getModelPtr()->setFactorizationFrequency(200);
+   // lp_data->si->getModelPtr()->setSparseFactorization(true);
+   // lp_data->si->getModelPtr()->setSpecialOptions(524288);
+   // lp_data->si->getModelPtr()->setSpecialOptions(4);
    lp_data->si->getModelPtr()->setPerturbation(50);
    //set cleanup param if unscaled primal is infeasible
    lp_data->si->setCleanupScaling(1);
@@ -2598,6 +2624,12 @@ int initial_lp_solve (LPdata *lp_data, int *iterd)
    }else if (si->isIterationLimitReached()){
       term = LP_D_ITLIM;
 #ifdef __OSI_CLP__
+      // YX: reset term if needed; Clp may return ITLIM at timeout
+      int itlim_chk = -1;
+      retval = si->getIntParam(OsiMaxNumIteration, itlim_chk);
+      if (si->getIterationCount() < itlim_chk){
+         term = LP_TIME_LIMIT;
+      }
       /* If max iterations and had switched to primal, bound is no good */
       if (si->getModelPtr()->secondaryStatus() == 10){
 	 term = LP_ABANDONED;
@@ -2715,6 +2747,12 @@ int dual_simplex(LPdata *lp_data, int *iterd)
    }else if (si->isIterationLimitReached()){
       term = LP_D_ITLIM;
 #ifdef __OSI_CLP__
+      // YX: reset term if needed; Clp may return ITLIM at timeout
+      int itlim_chk = -1;
+      retval = si->getIntParam(OsiMaxNumIteration, itlim_chk);
+      if (si->getIterationCount() < itlim_chk){
+         term = LP_TIME_LIMIT;
+      } 
       /* If max iterations and had switched to primal, bound is no good */
       if (si->getModelPtr()->secondaryStatus() == 10){
 	 term = LP_ABANDONED;
@@ -2819,9 +2857,17 @@ int solve_hotstart(LPdata *lp_data, int *iterd)
       term = LP_D_OBJLIM;
    else if (si->isProvenOptimal())
       term = LP_OPTIMAL;
-   else if (si->isIterationLimitReached())
+   else if (si->isIterationLimitReached()){
       term = LP_D_ITLIM;
-   else if (si->isAbandoned())
+#ifdef __OSI_CLP__
+      // YX: reset term if needed; Clp may return ITLIM at timeout
+      int itlim_chk = -1;
+      retval = si->getIntParam(OsiMaxNumIteration, itlim_chk);
+      if (si->getIterationCount() < itlim_chk){
+         term = LP_TIME_LIMIT;
+      }
+#endif
+   }else if (si->isAbandoned())
       term = LP_ABANDONED;
    
    /* if(term == D_UNBOUNDED){
